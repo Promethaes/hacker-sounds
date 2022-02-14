@@ -3,3 +3,8 @@ node_modules
 .vscode-test/
 *.vsix
 .DS_Store
+**/bin
+**/obj
+**/.vs
+**/Properties
+VSCodeSoundHelper/VSCodeSoundHelper.csproj.user

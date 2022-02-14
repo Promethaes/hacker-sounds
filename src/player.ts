@@ -3,7 +3,9 @@ const path = require('path');
 const player = require('play-sound')();
 
 const _isWindows = process.platform === 'win32';
-const _playerWindowsPath = path.join(__dirname, '..', 'audio', 'sounder.exe');
+const _playerWindowsPath = path.join(__dirname, '..', 'audio', 'VSCodeSoundHelper.exe');
+
+
 
 export interface PlayerConfig {
     /**
@@ -23,7 +25,8 @@ export default {
     play(filePath: string, config: PlayerConfig) : Promise<void> {
         return new Promise ((resolve, reject) => {
             if (_isWindows) {
-                cp.execFile(_playerWindowsPath, ['/vol', config.winVol, filePath]);
+                console.log("hey");
+                //cp.execFile(_playerWindowsPath, [filePath]);
                 resolve();
             } else {
                 player.play(filePath, playerAdapter(config), (err: any) => {

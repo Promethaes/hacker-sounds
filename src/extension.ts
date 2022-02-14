@@ -5,6 +5,9 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import player, { PlayerConfig } from './player';
 import debounce = require('lodash.debounce');
+import { Socket } from 'dgram';
+import { cpuUsage } from 'process';
+
 
 let listener: EditorListener;
 let isActive: boolean;
@@ -15,45 +18,62 @@ let config: PlayerConfig = {
     linuxVol: 100
 };
 
-export function activate(context: vscode.ExtensionContext) {
-    console.log('Initializing "hacker-sounds" extension');
+const net = require('net');
+let socket = new net.Socket();
+const cp = require('child_process');
+const _playerWindowsPath = path.join(__dirname, '..', 'audio', 'VSCodeSoundHelper.exe');
 
+export function activate(context: vscode.ExtensionContext) {
+    console.log('Initializing "UNDERTALE Mode" extension');
     // is the extension activated? yes by default.
-    isActive = context.globalState.get('hacker_sounds', true);
+    isActive = context.globalState.get('UNDERTALE_Mode', true);
     config.macVol = context.globalState.get('mac_volume', 1);
     config.winVol = context.globalState.get('win_volume', 100);
     config.linuxVol = context.globalState.get('linux_volume', 1);
+    cp.execFile(_playerWindowsPath);
+    setTimeout(() => {
+        socket.connect(6969, '127.0.0.1', () => {
+        })
+    }, 500);
+
+    socket.on('data', (data: any) => {
+        console.log(`${data}`);
+    });
+
+    socket.on('close', () => {
+        socket.destroy();
+    });
 
     // to avoid multiple different instances
     listener = listener || new EditorListener(player);
 
-    vscode.commands.registerCommand('hacker_sounds.enable', () => {
+    vscode.commands.registerCommand('UNDERTALE_Mode.enable', () => {
         if (!isActive) {
-            context.globalState.update('hacker_sounds', true);
+            context.globalState.update('UNDERTALE_Mode', true);
             isActive = true;
-            vscode.window.showInformationMessage('Hacker Sounds extension enabled');
+            vscode.window.showInformationMessage('UNDERTALE Mode extension enabled');
         } else {
-            vscode.window.showWarningMessage('Hacker Sounds extension is already enabled');
+            vscode.window.showWarningMessage('UNDERTALE Mode extension is already enabled');
         }
     });
-    vscode.commands.registerCommand('hacker_sounds.disable', () => {
+    vscode.commands.registerCommand('UNDERTALE_Mode.disable', () => {
         if (isActive) {
-            context.globalState.update('hacker_sounds', false);
+            context.globalState.update('UNDERTALE_Mode', false);
             isActive = false;
-            vscode.window.showInformationMessage('Hacker Sounds extension disabled');
+            vscode.window.showInformationMessage('UNDERTALE Mode extension disabled');
         } else {
-            vscode.window.showWarningMessage('Hacker Sounds extension is already disabled');
+            vscode.window.showWarningMessage('UNDERTALE Mode extension is already disabled');
         }
     });
-    vscode.commands.registerCommand('hacker_sounds.volumeUp', () => {
+    vscode.commands.registerCommand('UNDERTALE_Mode.volumeUp', () => {
         let newVol = null;
 
         switch (process.platform) {
             case 'darwin':
                 config.macVol += 1;
 
-                if(config.macVol > 10){
-                    vscode.window.showWarningMessage('Hacker Sounds already at maximum volume');
+                if (config.macVol > 10) {
+                    vscode.window.showWarningMessage('UNDERTALE Mode already at maximum volume');
                     config.macVol = 10;
                 }
 
@@ -64,8 +84,8 @@ export function activate(context: vscode.ExtensionContext) {
             case 'win32':
                 config.winVol += 10;
 
-                if(config.winVol > 100){
-                    vscode.window.showWarningMessage('Hacker Sounds already at maximum volume');
+                if (config.winVol > 100) {
+                    vscode.window.showWarningMessage('UNDERTALE Mode already at maximum volume');
                     config.winVol = 100;
                 }
 
@@ -76,8 +96,8 @@ export function activate(context: vscode.ExtensionContext) {
             case 'linux':
                 config.linuxVol += 1;
 
-                if(config.linuxVol > 10){
-                    vscode.window.showWarningMessage('Hacker Sounds already at maximum volume');
+                if (config.linuxVol > 10) {
+                    vscode.window.showWarningMessage('UNDERTALE Mode already at maximum volume');
                     config.linuxVol = 10;
                 }
 
@@ -90,17 +110,17 @@ export function activate(context: vscode.ExtensionContext) {
                 break;
         }
 
-        vscode.window.showInformationMessage('Hacker Sounds volume raised: ' + newVol);
+        vscode.window.showInformationMessage('UNDERTALE Mode volume raised: ' + newVol);
     });
-    vscode.commands.registerCommand('hacker_sounds.volumeDown', () => {
+    vscode.commands.registerCommand('UNDERTALE_Mode.volumeDown', () => {
         let newVol = null;
 
         switch (process.platform) {
             case 'darwin':
                 config.macVol -= 1;
 
-                if(config.macVol < 1){
-                    vscode.window.showWarningMessage('Hacker Sounds already at minimum volume');
+                if (config.macVol < 1) {
+                    vscode.window.showWarningMessage('UNDERTALE Mode already at minimum volume');
                     config.macVol = 1;
                 }
 
@@ -111,8 +131,8 @@ export function activate(context: vscode.ExtensionContext) {
             case 'win32':
                 config.winVol -= 10;
 
-                if(config.winVol < 10){
-                    vscode.window.showWarningMessage('Hacker Sounds already at minimum volume');
+                if (config.winVol < 10) {
+                    vscode.window.showWarningMessage('UNDERTALE Mode already at minimum volume');
                     config.winVol = 10;
                 }
 
@@ -123,8 +143,8 @@ export function activate(context: vscode.ExtensionContext) {
             case 'linux':
                 config.linuxVol -= 1;
 
-                if(config.linuxVol < 1){
-                    vscode.window.showWarningMessage('Hacker Sounds already at minimum volume');
+                if (config.linuxVol < 1) {
+                    vscode.window.showWarningMessage('UNDERTALE Mode already at minimum volume');
                     config.linuxVol = 1;
                 }
 
@@ -137,7 +157,7 @@ export function activate(context: vscode.ExtensionContext) {
                 break;
         }
 
-        vscode.window.showInformationMessage('Hacker Sounds volume lowered: ' + newVol);
+        vscode.window.showInformationMessage('UNDERTALE Mode volume lowered: ' + newVol);
     });
 
     // Add to a list of disposables which are disposed when this extension is deactivated.
@@ -145,7 +165,7 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // this method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }
 
 /**
  * Listen to editor changes and play a sound when a key is pressed.
@@ -177,7 +197,7 @@ export class EditorListener {
     }
 
     _keystrokeCallback = debounce((event: vscode.TextDocumentChangeEvent) => {
-        if (!isActive){ return; }
+        if (!isActive) { return; }
 
         let activeDocument = vscode.window.activeTextEditor && vscode.window.activeTextEditor.document;
         if (event.document !== activeDocument || event.contentChanges.length === 0) { return; }
@@ -187,30 +207,35 @@ export class EditorListener {
 
         switch (pressedKey) {
             case '':
-                if(event.contentChanges[0].rangeLength === 1){
+                if (event.contentChanges[0].rangeLength === 1) {
                     // backspace or delete pressed
-                    this.player.play(this._deleteAudio);
+                    //this.player.play(this._deleteAudio);
+                    socket.write('2');
                 } else {
                     // text cut
-                    this.player.play(this._cutAudio);
+                    //this.player.play(this._cutAudio);
+                    socket.write('1');
                 }
                 break;
 
             case ' ':
                 // space bar pressed
-                this.player.play(this._spaceAudio);
+                // this.player.play(this._spaceAudio);
+                socket.write('6');
                 break;
 
             case '\n':
                 // enter pressed
-                this.player.play(this._enterAudio);
+                // this.player.play(this._enterAudio);
+                socket.write('3');
                 break;
 
             case '\t':
             case '  ':
             case '    ':
                 // tab pressed
-                this.player.play(this._tabAudio);
+                // this.player.play(this._tabAudio);
+                socket.write('7');
                 break;
 
             default:
@@ -219,17 +244,23 @@ export class EditorListener {
                 switch (textLength) {
                     case 0:
                         // user hit Enter while indented
-                        this.player.play(this._enterAudio);
+                        //this.player.play(this._enterAudio);
+                socket.write('3');
+
                         break;
 
                     case 1:
                         // it's a regular character
-                        this.player.play(this._otherKeysAudio);
+                        //this.player.play(this._otherKeysAudio);
+                        socket.write('4');
+
                         break;
 
                     default:
                         // text pasted
-                        this.player.play(this._pasteAudio);
+                        //this.player.play(this._pasteAudio);
+                        socket.write('5');
+
                         break;
                 }
                 break;
@@ -237,7 +268,7 @@ export class EditorListener {
     }, 100, { leading: true });
 
     _arrowKeysCallback = debounce((event: vscode.TextEditorSelectionChangeEvent) => {
-        if (!isActive){ return; }
+        if (!isActive) { return; }
 
         // current editor
         const editor = vscode.window.activeTextEditor;
@@ -245,7 +276,8 @@ export class EditorListener {
 
         // check if there is no selection
         if (editor.selection.isEmpty && isNotArrowKey === false) {
-            this.player.play(this._arrowsAudio);
+            //this.player.play(this._arrowsAudio);
+            socket.write('0');
         } else {
             isNotArrowKey = false;
         }
@@ -253,5 +285,6 @@ export class EditorListener {
 
     dispose() {
         this._disposable.dispose();
+        socket.destroy();
     }
 }
